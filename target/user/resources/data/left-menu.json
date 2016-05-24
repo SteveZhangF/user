@@ -1,0 +1,19 @@
+[
+  {
+    "group": "Users",
+    "icon":"icon-man",
+    "data": [
+      {
+        "title": "Users",
+        "icon": "resources/resources/images/left-menu/edit_48.png",
+        "url": "/entity_list?entity=entity_Employee_1458497984593",
+        "type":0
+      },
+      { "title":"Modules",
+        "icon":"resources/resources/images/left-menu/edit_48.png",
+        "url": "app/modules/index.html",
+        "type":1
+      }
+    ]
+  }
+]

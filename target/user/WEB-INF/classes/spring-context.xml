@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+
+       http://www.springframework.org/schema/context
+                      http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:component-scan base-package="com.oncore.userend.configure"></context:component-scan>
+    <context:component-scan base-package="com.oncore.userend.groovy"></context:component-scan>
+    <context:component-scan base-package="com.oncore.userend.helper"></context:component-scan>
+    <context:component-scan base-package="com.oncore.userend.jms"></context:component-scan>
+    <context:component-scan base-package="com.oncore.userend.model"></context:component-scan>
+    <context:component-scan base-package="com.oncore.userend.storage"></context:component-scan>
+
+    <import resource="spring-hibernate.xml"></import>
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>
+                    classpath:hibernate-development.properties
+                </value>
+            </list>
+        </property>
+    </bean>
+    <bean id="connectionFactory" class="org.springframework.jms.connection.SingleConnectionFactory">
+        <property name="targetConnectionFactory" ref="pooledConnectionFactory"/>
+    </bean>
+    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
+        <property name="connectionFactory" ref="targetConnectionFactory"/>
+        <property name="maxConnections" value="10"/>
+    </bean>
+    <bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL"
+                  value="tcp://ec2-54-172-193-84.compute-1.amazonaws.com:61616?jms.blobTransferPolicy.uploadUrl=http://ec2-54-172-193-84.compute-1.amazonaws.com:8161/fileserver/"/>
+    </bean>
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="connectionFactory"/>
+    </bean>
+
+    <!--msg queue for create report template start-->
+
+    <bean id="reportTemplateMessageListener"
+          class="com.oncore.userend.jms.message.consumer.GroovyDaoMessageListener">
+        <property name="groovyRegister" ref="groovyRegister"/>
+    </bean>
+
+    <bean id="groovyDaoDestination" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg>
+            <value>groovy_dao_destination</value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="groovyDaoMessageContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="destination" ref="groovyDaoDestination"/>
+        <property name="messageListener" ref="reportTemplateMessageListener"/>
+    </bean>
+    <!--msg queue for create report template end-->
+
+
+    <!--msg queue for create report template start-->
+
+    <bean id="htmlFileMessageListener"
+          class="com.oncore.userend.jms.message.consumer.FileMessageListener">
+    </bean>
+
+    <bean id="htmlFileDestination" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg>
+            <value>html_file_destination</value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="htmlFileMessageContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="destination" ref="htmlFileDestination"/>
+        <property name="messageListener" ref="htmlFileMessageListener"/>
+    </bean>
+    <!--msg queue for create report template end-->
+    <bean class="org.springframework.scripting.support.ScriptFactoryPostProcessor"/>
+
+    <bean class="com.oncore.userend.UserEndRunner" >
+        <property name="groovyRegister" ref="groovyRegister"></property>
+        <property name="commonConfigure" ref="commonConfigure"></property>
+    </bean>
+
+    <bean class="com.oncore.userend.helper.PdfReportGenerator">
+        <constructor-arg name="commonConfigure" ref="commonConfigure"/>
+        <constructor-arg name="downLoader" ref="awsDownloader"/>
+        <constructor-arg name="upLoader" ref="aWSUploader"/>
+    </bean>
+</beans>
