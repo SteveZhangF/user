@@ -20,6 +20,9 @@
 <%
   WebApplicationContext context1 = (WebApplicationContext)request.getAttribute(DispatcherServlet.WEB_APPLICATION_CONTEXT_ATTRIBUTE);
   out.println(context1);
+  //when regenerate or register new flow, we should refresh the context,
+  //may be we need a better method?
+  // Time to consider about how to generate the flow in a better way
 //    ((AbstractRefreshableWebApplicationContext)context1).refresh();
 %>
 <form class="form-horizontal">

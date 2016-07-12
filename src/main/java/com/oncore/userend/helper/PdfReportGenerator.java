@@ -32,6 +32,11 @@ public class PdfReportGenerator extends ReportGenerator {
                 template = template.replace("${"+key+"}",element.get(key).toString());
             }
         }
+        /**
+         * //TODO
+         * need to move the xml headers to an configure file or database,
+         * cause we never know what headers we will use
+         * */
         String xmlHeader = "<?xml version=\"1.1\" ?><!DOCTYPE naughtyxml [<!ENTITY nbsp \"&#0160;\"><!ENTITY copy \"&#0169;\"><!ENTITY rsquo   \"&#x20199;\"><!ENTITY ldquo   \"&#8220;\"><!ENTITY rdquo   \"&#8221;\"><!ENTITY ndash  \"&#x2013;\" > <!ENTITY mdash  \"&#x2014;\" ><!ENTITY lsquo   \"&#8216;\">]>	";
         File tmp = File.createTempFile("report_",".pdf");
         OutputStream os = new FileOutputStream(tmp);
